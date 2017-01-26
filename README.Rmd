@@ -1,0 +1,42 @@
+---
+title: "Assignment 1"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+The dataset can be found here. <https://data.baltimorecity.gov/Public-Safety/BPD-Part-1-Victim-Based-Crime-Data/wsfq-mvij/data>
+
+```{r message=FALSE}
+library(tibble)
+library(dplyr)
+library(knitr)
+crime_data <- read.csv("BPD_Part_1_Victim_Based_Crime_Data.csv", na.strings=c("", " ", "NA"))
+crime_data <- tbl_df(crime_data)
+```
+
+## Summary of Numeric Data
+```{r}
+numeric_crime_data <- select_if(crime_data, is.numeric)
+numeric_crime_data %>% summarise_all(mean, na.rm=TRUE) %>% kable
+```
+
+Grouped by crime code:
+```{r}
+crime_data %>% select(CrimeCode, Post, Total.Incidents) %>% group_by(CrimeCode) %>% summarise_all(mean, na.rm=TRUE) %>% head(10) %>% kable
+```
+
+
+The values for District are in mixed case
+```{r}
+crime_data %>% select(CrimeCode, District, Total.Incidents) %>% group_by(CrimeCode, District) %>% summarise(sum(Total.Incidents)) %>% head(10) %>% kable
+```
+
+so they must be made uniform to count the incidents accurately.
+```{r}
+crime_data <- mutate(crime_data, District = toupper(District))
+crime_data %>% select(CrimeCode, District, Total.Incidents) %>% group_by(CrimeCode, District) %>% summarise(sum(Total.Incidents)) %>% head(10) %>% kable
+```
+
